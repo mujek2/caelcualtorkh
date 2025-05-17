@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nintendo Switch UI</title>
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #E60012;
+            --secondary-color: #1e90ff;
+            --accent-color: #2ed573;
+            --dark-color: #2f3542;
+            --light-color: #f1f2f6;
+            --focus-outline: 3px solid white;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background 0.8s ease-in-out;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            transform-style: preserve-3d;
+            z-index: 1; /* Lower z-index to ensure nav buttons are above */
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            padding: 15px 25px;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .battery {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .battery-icon {
+            width: 40px;
+            height: 22px;
+            border: 2px solid white;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .battery, .clock {
+            font-size: 1.2rem; /* Adjust as needed */
+        }
+
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 4px;
+            height: 10px;
+            width: 4px;
+            background: white;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .battery-fill {
+            height: 100%;
+            background: white;
+            position: absolute;
+            left: 0;
+            border-radius: 2px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .clock {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Game Carousel */
+        .carousel-container {
+            margin-top: 100px;
+            position: relative;
+            overflow: visible;
+            transform-style: preserve-3d;
+        }
+
+        .carousel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            touch-action: pan-y;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 25px;
+            width: 220px;
+            height: 320px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            transform: scale(0.85) translateZ(0);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            outline: none;
+            z-index: 5; /* Lower z-index to ensure nav buttons are above */
+        }
+
+        .game-card:focus {
+            outline: var(--focus-outline);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            transition: transform 0.5s;
+            pointer-events: none;
+        }
+
+        .game-card.active {
+            transform: scale(1.1) translateZ(50px);
+            background: var(--bg-color);
+            color: white;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .game-card.active:focus {
+            outline: var(--focus-outline);
+        }
+
+        .game-card.active::before {
+            transform: rotate(0deg);
+        }
+
+        .game-card.prev, .game-card.next {
+            opacity: 0.7;
+        }
+
+        .game-card img {
+            width: 150px;
+            height: 150px;
+            border-radius: 20px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            object-fit: cover;
+        }
+
+        .game-card.active img {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card h2 {
+            font-size: 1.4rem;
+            margin: 15px 0 10px;
+            font-weight: 700;
+            transition: transform 0.3s;
+        }
+
+        .game-card.active h2 {
+            transform: scale(1.05);
+        }
+
+        .game-info {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.3s;
+            opacity: 0;
+            font-size: 0.9rem;
+        }
+
+        .game-card.active .game-info {
+            max-height: 100px;
+            opacity: 1;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+
+        .game-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-stat i {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        /* Navigation Buttons */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s;
+            z-index: 10001; /* Further increased z-index to ensure buttons are above game cards */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+
+        .nav-btn:focus {
+            outline: var(--focus-outline);
+        }
+
+        .prev-btn { left: -30px; }
+        .next-btn { right: -30px; }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* Bottom Menu */
+        .bottom-menu {
+            position: relative;
+            margin-top: 45px;
+            width: 80%;
+            left: 10%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            
+        }
+
+        .menu-item {
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            outline: none;
+        }
+
+        .menu-item:focus {
+            outline: var(--focus-outline);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Notifications */
+        .notification {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark-color);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.5s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+            z-index: 100;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .pulsing {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Controller Buttons */
+        .controller-hint {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            opacity: 0.7;
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .button-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+
+        /* Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            will-change: transform, opacity;
+        }
+
+        /* User Profile */
+        .user-profile {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            color: white;
+            z-index: 10002; /* Higher z-index to ensure logo is above game cards */
+        }
+
+
+        /* Loading Indicator */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .loading.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .game-card {
+                width: 140px;
+                height: 220px;
+                padding: 10px;
+            }
+
+            .carousel-container {
+                padding-top: 50px;
+                padding-bottom: 50px;
+                margin-top: 80px;
+            }
+
+            .game-card {
+                width: 180px;
+                height: 280px;
+                padding: 15px;
+            }
+
+            .game-card img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .nav-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .prev-btn { left: -20px; }
+            .next-btn { right: -20px; }
+
+            .bottom-menu {
+                width: 95%;
+                left: 2.5%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-bar {
+                padding: 10px 15px;
+            }
+
+            .game-card {
+                width: 150px;
+                height: 250px;
+                padding: 10px;
+            }
+
+            .game-card img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .game-card h2 {
+                font-size: 1rem;
+            }
+
+            .controller-hint {
+                display: none;
+            }
+
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Controller button hints at the bottom of each card */
+        .controller-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .controller-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .controller-button-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 3px;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        /* Fix for WebKit CSS Matrix */
+        .carousel-transform-fix {
+            transform: translateX(0);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container" id="main-content">
+        <!-- User Profile -->
+        <div class="user-profile">
+        </div>
+        
+        <!-- Top Bar (Clock & Battery) -->
+        <div class="top-bar" role="banner">
+            <div class="battery">
+                <i class="fas fa-bolt" aria-hidden="true"></i>
+                <span class="battery-level" id="battery-level">87%</span>
+                <div class="battery-icon" role="img" aria-label="Battery indicator">
+                    <div class="battery-fill" id="battery-fill" style="width: 87%"></div>
+                </div>
+            </div>
+            <div class="clock">
+                <i class="far fa-clock" aria-hidden="true"></i>
+                <span id="time">16:38</span>
+            </div>
+        </div>
+
+        <!-- Game Carousel -->
+        <div class="carousel-container">
+            <div class="carousel carousel-transform-fix" id="carousel" role="region" aria-label="Game selection carousel">
+                <div class="game-card active" tabindex="0" role="button" aria-label="Zelda: Breath of the Wild" style="--bg-color: #E60012">
+                    <div>
+                        <!-- Add error handling for images -->
+                        <img src="https://th.bing.com/th/id/OIP.cJXZgDS3YxYdfEg82coMOwHaJ4?rs=1&pid=ImgDetMain" alt="Zelda: Breath of the Wild" onerror="this.src='fallback.jpg';">
+                        <h2>Zelda: BOTW</h2>
+                        <p class="game-info">Explore a vast open world in this epic adventure! Discover hidden treasures and defeat powerful enemies.</p>
+                        <div class="game-stats">
+                            <div class="game-stat">
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <span>العب الآن
+                                </span>
+                            </div>
+                        </div>
+                        <div class="controller-buttons">
+                            <div class="controller-but /div>
+                            <div class="controller-button">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card next" tabindex="0" role="button" aria-label="Mario Kart 8 Deluxe" style="--bg-color: #1e90ff">
+                    <img src="https://assets.nintendo.com/image/upload/ar_16:9,b_auto:border,c_lpad/b_white/f_auto/q_auto/dpr_auto/c_scale,w_300/v1/ncom/en_US/games/switch/m/mario-kart-8-deluxe-switch/hero" alt="Mario Kart 8 Deluxe">
+                    <div>
+                        <h2>Mario Kart 8</h2>
+                        <p class="game-info">Race against friends in this thrilling kart racer! Master drifting and use items to secure victory.</p>
+                        <div class="game-stats">
+                            <div class="game-stat">
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <span>العب الآن
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-card" tabindex="0" role="button" aria-label="Super Mario Odyssey" style="--bg-color: #2ed573">
+                    <img src="https://assets.nintendo.com/image/upload/ar_16:9,b_auto:border,c_lpad/b_white/f_auto/q_auto/dpr_auto/c_scale,w_300/v1/ncom/en_US/games/switch/s/super-mario-odyssey-switch/hero" alt="Super Mario Odyssey">
+                    <div>
+                        <h2>Mario Odyssey</h2>
+                        <p class="game-info">Join Mario on a globe-trotting 3D adventure! Collect Power Moons and save Princess Peach.</p>
+                        <div class="game-stats">
+                            <div class="game-stat">
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <span>العب الآن
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <button class="nav-btn prev-btn" aria-label="Previous game" style="z-index: 10000;"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+            <button class="nav-btn next-btn" aria-label="Next game" style="z-index: 10000;"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+
+        <!-- Bottom Menu -->
+        <div class="bottom-menu" role="navigation" aria-label="Main menu">
+            <div class="menu-item" id="store-btn" tabindex="0" role="button" aria-label="Nintendo eShop"><i class="fas fa-shopping-bag" aria-hidden="true"></i></div>
+            <div class="menu-item" id="friends-btn" tabindex="0" role="button" aria-label="Friends"><i class="fas fa-user-friends" aria-hidden="true"></i></div>
+            <div class="menu-item" id="home-btn" tabindex="0" role="button" aria-label="Home"><i class="fas fa-home" aria-hidden="true"></i></div>
+            <div class="menu-item" id="settings-btn" tabindex="0" role="button" aria-label="Settings"><i class="fas fa-cog" aria-hidden="true"></i></div>
+            <div class="menu-item" id="power-btn" tabindex="0" role="button" aria-label="Power options"><i class="fas fa-power-off" aria-hidden="true"></i></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification" role="alert" aria-live="polite">
+        <div class="notification-title">
+            <i class="fas fa-bell" aria-hidden="true"></i>
+            <span id="notification-title">New Update Available</span>
+        </div>
+        <p id="notification-text">A new system update is available for your console.</p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // State management
+            const state = {
+                currentIndex: 0,
+                isDragging: false,
+                startX: 0,
+                startY: 0,
+                startScrollLeft: 0,
+                lastInteractionTime: Date.now(),
+                autoplayInterval: null,
+                batteryLevel: 87, // Fixed initial battery level
+                isLoading: false
+            };
+
+            // Cache DOM elements
+            const elements = {
+                body: document.querySelector("body"),
+                cards: document.querySelectorAll(".game-card"),
+                carousel: document.querySelector("#carousel"),
+                container: document.querySelector(".container"),
+                prevBtn: document.querySelector(".prev-btn"),
+                nextBtn: document.querySelector(".next-btn"),
+                clock: document.querySelector("#time"),
+                batteryFill: document.querySelector("#battery-fill"),
+                batteryLevel: document.querySelector("#battery-level"),
+                notification: document.querySelector("#notification"),
+                notificationTitle: document.querySelector("#notification-title"),
+                notificationText: document.querySelector("#notification-text"),
+                menuItems: document.querySelectorAll(".menu-item"),
+                particlesContainer: document.querySelector("#particles"),
+                loading: document.querySelector("#loading")
+            };
+
+            // Constants
+            const CARD_COUNT = elements.cards.length;
+            const AUTOPLAY_INTERVAL = 5000;
+            const AUTOPLAY_IDLE_THRESHOLD = 10000;
+            const NOTIFICATION_DURATION = 5000;
+
+            /**
+             * Initialize the application
+             */
+            function init() {
+                // Set initial active card (first card)
+                elements.cards[0].classList.add("active");
+                elements.cards[1].classList.add("next");
+                elements.cards[CARD_COUNT - 1].classList.add("prev");
+                
+                createParticles();
+                startAutoplay();
+                setupEventListeners();
+                
+                // Set initial background color based on active card
+                const activeCardColor = elements.cards[0].style.getPropertyValue('--bg-color');
+                elements.body.style.background = `linear-gradient(135deg, ${activeCardColor}, var(--secondary-color))`;
+                
+                // Show a welcome notification after a delay
+                setTimeout(() => {
+                    showNotification("Welcome!", "Your Nintendo Switch is ready to play. Enjoy your games!");
+                }, 2000);
+            }
+
+            /**
+             * Set up all event listeners
+             */
+            function setupEventListeners() {
+                // Navigation buttons
+                elements.prevBtn.addEventListener("click", goToPrevCard);
+                elements.nextBtn.addEventListener("click", goToNextCard);
+
+                // Card click events
+                elements.cards.forEach((card, index) => {
+                    card.addEventListener("click", () => handleCardClick(index));
+                    card.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleCardClick(index);
+                        }
+                    });
+                });
+
+                // Menu item click events
+                elements.menuItems.forEach(item => {
+                    item.addEventListener("click", () => handleMenuItemClick(item.id));
+                    item.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleMenuItemClick(item.id);
+                        }
+                    });
+                });
+
+                // Keyboard navigation
+                document.addEventListener("keydown", handleKeyNavigation);
+
+                // Touch and mouse events for carousel
+                setupCarouselInteraction();
+            }
+
+            /**
+             * Set up touch and mouse events for carousel
+             */
+            function setupCarouselInteraction() {
+                // Mouse events
+                elements.carousel.addEventListener("mousedown", handleDragStart);
+                elements.carousel.addEventListener("mousemove", handleDragMove);
+                elements.carousel.addEventListener("mouseup", handleDragEnd);
+                elements.carousel.addEventListener("mouseleave", handleDragEnd);
+
+                // Touch events
+                elements.carousel.addEventListener("touchstart", handleTouchStart, { passive: false });
+                elements.carousel.addEventListener("touchmove", handleTouchMove, { passive: false });
+                elements.carousel.addEventListener("touchend", handleTouchEnd);
+            }
+
+            /**
+             * Update the active card and UI
+             */
+            function updateActiveCard() {
+                // Cache card dimensions for performance
+                const cardWidth = elements.cards[0].offsetWidth + 30;
+                
+                elements.cards.forEach((card, index) => {
+                    card.classList.remove("active", "prev", "next");
+                    
+                    if (index === state.currentIndex) {
+                        card.classList.add("active");
+                        card.setAttribute("aria-selected", "true");
+                    } else {
+                        card.setAttribute("aria-selected", "false");
+                        if (index === getPrevIndex()) {
+                            card.classList.add("prev");
+                        } else if (index === getNextIndex()) {
+                            card.classList.add("next");
+                        }
+                    }
+                });
+
+                // Update background gradient based on active card
+                const activeCardColor = elements.cards[state.currentIndex].style.getPropertyValue('--bg-color');
+                elements.body.style.background = `linear-gradient(135deg, ${activeCardColor}, var(--secondary-color))`;
+                
+                // Apply 3D transform to carousel using transform instead of scrollLeft
+                const translateValue = -state.currentIndex * cardWidth;
+                elements.carousel.style.transform = `translateX(${translateValue}px)`;
+            }
+
+            /**
+             * Get previous index with wrap-around
+             * @returns {number} The previous index
+             */
+            function getPrevIndex() {
+                return (state.currentIndex - 1 + CARD_COUNT) % CARD_COUNT;
+            }
+
+            /**
+             * Get next index with wrap-around
+             * @returns {number} The next index
+             */
+            function getNextIndex() {
+                return (state.currentIndex + 1) % CARD_COUNT;
+            }
+
+            /**
+             * Navigate to previous card
+             */
+            function goToPrevCard() {
+                state.currentIndex = getPrevIndex();
+                updateActiveCard();
+                resetAutoplay();
+            }
+
+            /**
+             * Navigate to next card
+             */
+            function goToNextCard() {
+                state.currentIndex = getNextIndex();
+                updateActiveCard();
+                resetAutoplay();
+            }
+
+            /**
+             * Handle card click
+             * @param {number} index - The index of the clicked card
+             */
+            function handleCardClick(index) {
+                if (index !== state.currentIndex) {
+                    state.currentIndex = index;
+                    updateActiveCard();
+                } else {
+                    // If clicking the active card, show a notification and loading state
+                    const gameName = elements.cards[index].querySelector("h2").textContent;
+                    showLoading(true);
+                    showNotification(`Starting ${gameName}`, "Loading game... Please wait.");
+                    
+                    // Simulate game loading
+                    setTimeout(() => {
+                        showLoading(false);
+                    }, 2000);
+                }
+                resetAutoplay();
+            }
+
+            /**
+             * Handle menu item click
+             * @param {string} id - The ID of the clicked menu item
+             */
+            function handleMenuItemClick(id) {
+                let title, text;
+                
+                switch(id) {
+                    case "home-btn":
+                        title = "Home";
+                        text = "You're already at the home screen.";
+                        break;
+                    case "store-btn":
+                        title = "Nintendo eShop";
+                        text = "Opening the Nintendo eShop. Browse for new games!";
+                        showLoading(true);
+                        setTimeout(() => showLoading(false), 1500);
+                        break;
+                    case "friends-btn":
+                        title = "Friends List";
+                        text = "Loading your friends list. Connect and play together!";
+                        showLoading(true);
+                        setTimeout(() => showLoading(false), 1000);
+                        break;
+                    case "settings-btn":
+                        title = "Settings";
+                        text = "Opening system settings. Customize your experience.";
+                        showLoading(true);
+                        setTimeout(() => showLoading(false), 800);
+                        break;
+                    case "power-btn":
+                        title = "Power Options";
+                        text = "Sleep mode, restart, or power off?";
+                        break;
+                }
+                
+                showNotification(title, text);
+                resetAutoplay();
+            }
+
+            /**
+             * Handle keyboard navigation
+             * @param {KeyboardEvent} e - The keyboard event
+             */
+            function handleKeyNavigation(e) {
+                switch(e.key) {
+                    case "ArrowLeft":
+                        goToPrevCard();
+                        break;
+                    case "ArrowRight":
+                        goToNextCard();
+                        break;
+                    case "Enter":
+                        // Simulate clicking the active card if it has focus
+                        if (document.activeElement === elements.cards[state.currentIndex]) {
+                            elements.cards[state.currentIndex].click();
+                        }
+                        break;
+                    case "Tab":
+                        // Let the browser handle tab navigation naturally
+                        resetAutoplay();
+                        break;
+                }
+            }
+
+            /**
+             * Handle drag start for mouse events
+             * @param {MouseEvent} e - The mouse event
+             */
+            function handleDragStart(e) {
+                state.isDragging = true;
+                state.startX = e.pageX;
+                elements.carousel.style.cursor = "grabbing";
+                resetAutoplay();
+                e.preventDefault();
+            }
+
+            /**
+             * Handle drag move for mouse events
+             * @param {MouseEvent} e - The mouse event
+             */
+            function handleDragMove(e) {
+                if (!state.isDragging) return;
+                
+                const x = e.pageX;
+                const walk = (x - state.startX) * 2;
+                const cardWidth = elements.cards[0].offsetWidth + 30;
+                const currentTranslate = -state.currentIndex * cardWidth;
+                
+                elements.carousel.style.transform = `translateX(${currentTranslate + walk}px)`;
+                e.preventDefault();
+            }
+
+            /**
+             * Handle drag end for mouse events
+             */
+            function handleDragEnd() {
+                if (!state.isDragging) return;
+                
+                state.isDragging = false;
+                elements.carousel.style.cursor = "grab";
+                
+                // Get current transform value
+                const style = window.getComputedStyle(elements.carousel);
+                let currentTranslateX = 0;
+                
+                try {
+                    // Try to use WebKitCSSMatrix if available
+                    if (window.WebKitCSSMatrix) {
+                        const matrix = new WebKitCSSMatrix(style.transform);
+                        currentTranslateX = matrix.m41;
+                    } else {
+                        // Fallback for browsers without WebKitCSSMatrix
+                        const transformValue = style.transform || style.webkitTransform;
+                        const match = transformValue.match(/translateX\(([^)]+)\)/);
+                        if (match && match[1]) {
+                            currentTranslateX = parseFloat(match[1]);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error parsing transform:", error);
+                    // Fallback to just updating the active card without animation
+                    updateActiveCard();
+                    return;
+                }
+                
+                // Calculate which card should be active based on the drag distance
+                const cardWidth = elements.cards[0].offsetWidth + 30;
+                const dragThreshold = cardWidth / 3;
+                
+                // Calculate the expected position for the current index
+                const expectedPosition = -state.currentIndex * cardWidth;
+                const difference = expectedPosition - currentTranslateX;
+                
+                // Determine if we should change cards based on drag distance
+                if (Math.abs(difference) > dragThreshold) {
+                    if (difference > 0) {
+                        // Dragged left, go to next card
+                        goToNextCard();
+                    } else {
+                        // Dragged right, go to previous card
+                        goToPrevCard();
+                    }
+                } else {
+                    // Not dragged far enough, snap back
+                    updateActiveCard();
+                }
+            }
+
+            /**
+             * Handle touch start
+             * @param {TouchEvent} e - The touch event
+             */
+            function handleTouchStart(e) {
+                if (e.touches.length !== 1) return; // Only handle single touch
+                
+                state.isDragging = true;
+                state.startX = e.touches[0].clientX;
+                resetAutoplay();
+                e.preventDefault(); // Prevent scrolling
+            }
+
+            /**
+             * Handle touch move
+             * @param {TouchEvent} e - The touch event
+             */
+            function handleTouchMove(e) {
+                if (!state.isDragging || e.touches.length !== 1) return;
+                
+                const x = e.touches[0].clientX;
+                const walk = (x - state.startX) * 2;
+                const cardWidth = elements.cards[0].offsetWidth + 30;
+                const currentTranslate = -state.currentIndex * cardWidth;
+                
+                elements.carousel.style.transform = `translateX(${currentTranslate + walk}px)`;
+                e.preventDefault(); // Prevent scrolling
+            }
+
+            /**
+             * Handle touch end
+             */
+            function handleTouchEnd() {
+                handleDragEnd();
+            }
+
+            /**
+             * Update clock display
+             */
+            function updateClock() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                elements.clock.textContent = `${hours}:${minutes}`;
+                elements.clock.setAttribute('aria-label', `Current time: ${hours}:${minutes}`);
+            }
+
+            /**
+             * Update battery display
+             */
+            async function updateBattery() {
+                try {
+                    if (typeof navigator.getBattery === 'function') {
+                        const battery = await navigator.getBattery();
+                        updateBatteryUI(battery.level * 100);
+                    } else {
+                        // Fallback for browsers without Battery API
+                        updateBatteryUI(state.batteryLevel);
+                    }
+                } catch (error) {
+                    console.error("Battery API error:", error);
+                    updateBatteryUI(state.batteryLevel);
+                }
+            }
+
+            /**
+             * Update battery UI with the given level
+             * @param {number} level - Battery level percentage
+             */
+            function updateBatteryUI(level) {
+                const batteryLevel = Math.floor(level);
+                state.batteryLevel = batteryLevel; // Store in state
+                
+                elements.batteryLevel.textContent = `${batteryLevel}%`;
+                elements.batteryFill.style.width = `${batteryLevel}%`;
+                
+                // Change color based on battery level
+                if (batteryLevel <= 20) {
+                    elements.batteryFill.style.background = '#ff4757';
+                } else if (batteryLevel <= 50) {
+                    elements.batteryFill.style.background = '#ffa502';
+                } else {
+                    elements.batteryFill.style.background = 'white';
+                }
+                
+                // Update ARIA label for accessibility
+                elements.batteryLevel.setAttribute('aria-label', `Battery level: ${batteryLevel}%`);
+            }
+
+            /**
+             * Show notification
+             * @param {string} title - Notification title
+             * @param {string} text - Notification text
+             */
+            function showNotification(title, text) {
+                elements.notificationTitle.textContent = title;
+                elements.notificationText.textContent = text;
+                elements.notification.classList.add("show");
+                
+                // Set ARIA attributes for accessibility
+                elements.notification.setAttribute('aria-label', `${title}: ${text}`);
+                
+                // Auto-hide notification after a delay
+                setTimeout(() => {
+                    elements.notification.classList.remove("show");
+                }, NOTIFICATION_DURATION);
+            }
+
+            /**
+             * Show or hide loading indicator
+             * @param {boolean} show - Whether to show or hide the loading indicator
+             */
+            function showLoading(show) {
+                state.isLoading = show;
+                if (show) {
+                    elements.loading.classList.add("show");
+                } else {
+                    elements.loading.classList.remove("show");
+                }
+            }
+
+            /**
+             * Create background particles
+             */
+            function createParticles() {
+                const fragment = document.createDocumentFragment();
+                const particleCount = 30;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement("div");
+                    particle.classList.add("particle");
+                    
+                    // Random properties
+                    const size = Math.random() * 5 + 2;
+                    const posX = Math.random() * window.innerWidth;
+                    const posY = Math.random() * window.innerHeight;
+                    const delay = Math.random() * 5;
+                    const duration = Math.random() * 10 + 10;
+                    
+                    // Apply styles using CSS variables for better performance
+                    particle.style.cssText = `
+                        width: ${size}px;
+                        height: ${size}px;
+                        transform: translate(${posX}px, ${posY}px);
+                        animation: float ${duration}s ease-in-out infinite;
+                        animation-delay: ${delay}s;
+                        opacity: ${Math.random() * 0.5 + 0.1};
+                    `;
+                    
+                    fragment.appendChild(particle);
+                }
+                
+                elements.particlesContainer.appendChild(fragment);
+            }
+
+            /**
+             * Start autoplay for carousel
+             */
+            function startAutoplay() {
+                clearInterval(state.autoplayInterval);
+                state.autoplayInterval = setInterval(() => {
+                    // Only autoplay if user hasn't interacted recently
+                    if (Date.now() - state.lastInteractionTime > AUTOPLAY_IDLE_THRESHOLD) {
+                        goToNextCard();
+                    }
+                }, AUTOPLAY_INTERVAL);
+            }
+
+            /**
+             * Reset autoplay timer
+             */
+            function resetAutoplay() {
+                state.lastInteractionTime = Date.now();
+                startAutoplay();
+            }
+
+            // Initialize clock and battery
+            updateClock();
+            updateBattery();
+            
+            // Set up periodic updates
+            const clockInterval = setInterval(updateClock, 60000); // Update every minute
+            const batteryInterval = setInterval(updateBattery, 15000); // Update every 15 seconds
+
+            // Clean up function to prevent memory leaks
+            function cleanup() {
+                clearInterval(state.autoplayInterval);
+                clearInterval(clockInterval);
+                clearInterval(batteryInterval);
+                
+                // Remove event listeners
+                elements.prevBtn.removeEventListener("click", goToPrevCard);
+                elements.nextBtn.removeEventListener("click", goToNextCard);
+                document.removeEventListener("keydown", handleKeyNavigation);
+                
+                elements.carousel.removeEventListener("mousedown", handleDragStart);
+                elements.carousel.removeEventListener("mousemove", handleDragMove);
+                elements.carousel.removeEventListener("mouseup", handleDragEnd);
+                elements.carousel.removeEventListener("mouseleave", handleDragEnd);
+                
+                elements.carousel.removeEventListener("touchstart", handleTouchStart);
+                elements.carousel.removeEventListener("touchmove", handleTouchMove);
+                elements.carousel.removeEventListener("touchend", handleTouchEnd);
+            }
+
+            // Store cleanup function for potential use
+            window.nintendoUICleanup = cleanup;
+
+            // Initialize UI
+            init();
+        });
+        // Fallback for Battery API
+        async function updateBattery() {
+            try {
+                if (typeof navigator.getBattery === 'function') {
+                    const battery = await navigator.getBattery();
+                    updateBatteryUI(battery.level * 100);
+                } else {
+                    // Fallback for unsupported browsers
+                    updateBatteryUI(state.batteryLevel);
+                }
+            } catch (error) {
+                console.error("Battery API error:", error);
+                updateBatteryUI(state.batteryLevel);
+            }
+        }
+                // Constants for repeated values
+        const CARD_WIDTH = elements.cards[0].offsetWidth + 30;
+        const DRAG_THRESHOLD = CARD_WIDTH / 3;
+
+        // Reusable function for updating the carousel position
+        function updateCarouselPosition() {
+            const translateValue = -state.currentIndex * CARD_WIDTH;
+            elements.carousel.style.transform = `translateX(${translateValue}px)`;
+        }
+    </script>
+</body>
+</html>

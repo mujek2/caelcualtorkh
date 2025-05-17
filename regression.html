@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Regresi Linear</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <style>
+        :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f4f4f4;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --border-color: #e5e7eb;
+    --card-bg: #ffffff;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --input-bg: #ffffff;
+    --table-header-bg: #3b82f6;
+    --table-header-text: #ffffff;
+    --table-border: #e5e7eb;
+    --table-row-hover: #f8fafc;
+    --table-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --gradient-start: #3b82f6;
+    --gradient-end: #2563eb;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #e5e7eb;
+    --text-secondary: #9ca3af;
+    --accent-color: #3b82f6;
+    --accent-hover: #60a5fa;
+    --border-color: #374151;
+    --card-bg: #2d2d2d;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --input-bg: #374151;
+    --table-header-bg: #3b82f6;
+    --table-header-text: #ffffff;
+    --table-border: #374151;
+    --table-row-hover: #374151;
+    --table-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --gradient-start: #3b82f6;
+    --gradient-end: #60a5fa;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    text-align: center;
+    background-color: var(--bg-secondary);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+.theme-switch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: var(--accent-color);
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.theme-switch:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px) rotate(180deg);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.theme-switch svg {
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s ease;
+}
+
+.container {
+    max-width: 1200px;
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 24px;
+    box-shadow: var(--card-shadow);
+    margin: auto;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title {
+    font-size: 2.5rem;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-row-btn {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.add-row-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.table-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1px;
+    margin: 20px 0;
+    overflow: hidden;
+    box-shadow: var(--table-shadow);
+    border: 1px solid var(--border-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-bg);
+}
+
+th, td {
+    padding: 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--table-border);
+    transition: all 0.3s ease;
+}
+
+th {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: var(--table-header-text);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+tr:hover td {
+    background-color: var(--table-row-hover);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tfoot tr th {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+    border-top: 2px solid var(--border-color);
+}
+
+input {
+    width: 80px;
+    text-align: center;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.delete-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 30px 0;
+    text-align: left;
+}
+
+.result-card {
+    background: var(--bg-secondary);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(8px);
+}
+
+.result-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.result-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-value {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.prediction-section {
+    margin-top: 40px;
+    padding: 32px;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(8px);
+}
+
+.prediction-section h3 {
+    margin: 0 0 24px 0;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.prediction-table {
+    max-width: 500px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--table-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.prediction-table th {
+    padding: 16px 24px;
+    font-size: 1.1rem;
+}
+
+.prediction-table td {
+    padding: 20px 24px;
+}
+
+.prediction-table input {
+    width: 120px;
+}
+
+#yCaret {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.equation {
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 20px 0;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+    </style>
+</head>
+<body>
+    
+    <button class="theme-switch" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="sun-and-moon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24">
+            <mask class="moon" id="moon-mask">
+                <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                <circle cx="24" cy="10" r="6" fill="black" />
+            </mask>
+            <circle class="sun" cx="12" cy="12" r="6" mask="url(#moon-mask)" fill="currentColor" />
+            <g class="sun-beams" stroke="currentColor">
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </g>
+        </svg>
+    </button>
+    <div class="container">
+        <h1 class="title">Kalkulator Regresi Linear</h1>
+        <button class="add-row-btn" onclick="addRow()">Tambah Baris</button>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>X</th>
+                        <th>Y</th>
+                        <th>XY</th>
+                        <th>X²</th>
+                        <th>Y²</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable"></tbody>
+                <tfoot>
+                    <tr>
+                        <th>∑</th>
+                        <th id="sumX">∑x</th>
+                        <th id="sumY">∑y</th>
+                        <th id="sumXY">∑xy</th>
+                        <th id="sumX2">∑x^2</th>
+                        <th id="sumY2">∑y^2</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    
+        <h2>Hasil Perhitungan</h2>
+        <div class="results-grid">
+            <div class="result-card">
+                <div class="result-label">X̄ (Mean X)</div>
+                <div class="result-value" id="xMean">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Ȳ (Mean Y)</div>
+                <div class="result-value" id="yMean">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">SSxy</div>
+                <div class="result-value" id="ssxy">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">SSxx</div>
+                <div class="result-value" id="ssxx">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">SSyy</div>
+                <div class="result-value" id="ssyy">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Slope (b)</div>
+                <div class="result-value" id="slope">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Intercept (a)</div>
+                <div class="result-value" id="intercept">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Regresi Linear</div>
+                <div class="result-value equation" id="equation">Ŷ = A + BX</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Koefisien Korelasi (r)</div>
+                <div class="result-value" id="correlation">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Koefisien Determinasi (r²)</div>
+                <div class="result-value" id="rSquared">-</div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">Koefisien Determinasi (%)</div>
+                <div class="result-value" id="rPercent">-</div>
+            </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>Prediksi Y</h3>
+            <table class="prediction-table">
+                <tr>
+                    <th>Nilai X</th>
+                    <th>Hasil Y caret (Ŷ)</th>
+                </tr>
+                <tr>
+                    <td><input type="number" id="inputX" oninput="calculateYCaret()"></td>
+                    <td><span id="yCaret">-</span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <h2>Scatter Plot dengan Regresi Linear</h2>
+    <canvas id="scatterChart"></canvas>
+</body>
+<script>
+    // Data contoh (X dan Y)
+    const dataPoints = [
+            {x: 1, y: 2}, {x: 2, y: 3}, {x: 3, y: 5}, {x: 4, y: 4}, {x: 5, y: 6}
+        ];
+
+        // Hitung regresi linear (slope dan intercept)
+        function linearRegression(data) {
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            const n = data.length;
+            
+            data.forEach(point => {
+                sumX += point.x;
+                sumY += point.y;
+                sumXY += point.x * point.y;
+                sumXX += point.x * point.x;
+            });
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            return { slope, intercept };
+        }
+
+        const { slope, intercept } = linearRegression(dataPoints);
+
+        // Tentukan rentang X untuk garis regresi
+        const minX = Math.min(...dataPoints.map(p => p.x));
+        const maxX = Math.max(...dataPoints.map(p => p.x));
+
+        // Buat data garis regresi dengan lebih banyak titik
+        const regressionLine = [];
+        for (let x = minX; x <= maxX; x += 0.1) {
+            regressionLine.push({x: x, y: slope * x + intercept});
+        }
+
+        // Konfigurasi Chart.js
+        const ctx = document.getElementById('scatterChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Data Points',
+                        data: dataPoints,
+                        backgroundColor: 'blue',
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Regression Line',
+                        data: regressionLine,
+                        type: 'line',
+                        borderColor: 'red',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'X Axis'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Y Axis'
+                        }
+                    }
+                }
+            }
+        });
+    // Theme toggle functionality
+window.toggleTheme = function() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme');
+    if (currentTheme === 'dark') {
+        body.removeAttribute('data-theme');
+    } else {
+        body.setAttribute('data-theme', 'dark');
+    }
+}
+
+// Add row to the table
+window.addRow = function() {
+    let table = document.getElementById("dataTable");
+    let row = table.insertRow();
+    let rowCount = table.rows.length;
+    row.innerHTML = `<td>${rowCount}</td>
+        <td><input type="number" oninput="calculate()"></td>
+        <td><input type="number" oninput="calculate()"></td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td><button class="delete-btn" onclick="deleteRow(this)">Hapus</button></td>`;
+}
+
+// Delete row from the table
+window.deleteRow = function(button) {
+    let row = button.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+    calculate();
+}
+
+// Calculate all values
+window.calculate = function() {
+    let table = document.getElementById("dataTable");
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+    let n = table.rows.length;
+
+    if (n === 0) return;
+
+    for (let row of table.rows) {
+        let x = parseFloat(row.cells[1].children[0].value) || 0;
+        let y = parseFloat(row.cells[2].children[0].value) || 0;
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumX2 += x * x;
+        sumY2 += y * y;
+        row.cells[3].innerText = (x * y).toFixed(2);
+        row.cells[4].innerText = (x * x).toFixed(2);
+        row.cells[5].innerText = (y * y).toFixed(2);
+    }
+
+    let xMean = sumX / n;
+    let yMean = sumY / n;
+    let ssxy = sumXY - n * xMean * yMean;
+    let ssxx = sumX2 - n * xMean * xMean;
+    let ssyy = sumY2 - n * yMean * yMean;
+
+    let b = ssxy / ssxx;
+    let a = yMean - b * xMean;
+    let r = ssxy / Math.sqrt(ssxx * ssyy);
+    let rSquared = r * r;
+
+    document.getElementById("sumX").innerText = sumX.toFixed(1);
+    document.getElementById("sumY").innerText = sumY.toFixed(1);
+    document.getElementById("sumXY").innerText = sumXY.toFixed(1);
+    document.getElementById("sumX2").innerText = sumX2.toFixed(2);
+    document.getElementById("sumY2").innerText = sumY2.toFixed(2);
+    document.getElementById("xMean").innerText = xMean.toFixed(2);
+    document.getElementById("yMean").innerText = yMean.toFixed(2);
+    document.getElementById("slope").innerText = b.toFixed(2);
+    document.getElementById("intercept").innerText = a.toFixed(2);
+    document.getElementById("equation").innerText = `Ŷ = ${a.toFixed(3)} + ${b.toFixed(3)}X`;
+    document.getElementById("correlation").innerText = r.toFixed(3);
+    document.getElementById("rSquared").innerText = rSquared.toFixed(3);
+    document.getElementById("rPercent").innerText = (rSquared * 100).toFixed(1) + "%";
+    document.getElementById("ssxy").innerText = ssxy.toFixed(2);
+    document.getElementById("ssxx").innerText = ssxx.toFixed(2);
+    document.getElementById("ssyy").innerText = ssyy.toFixed(2);
+}
+
+// Calculate Y caret (predicted Y value)
+window.calculateYCaret = function() {
+    let x = parseFloat(document.getElementById("inputX").value) || 0;
+    let equation = document.getElementById("equation").innerText.split(" + ");
+    let a = parseFloat(equation[0].replace("Ŷ = ", ""));
+    let b = parseFloat(equation[1].replace("X", ""));
+    let yCaret = a + b * x;
+    document.getElementById("yCaret").innerText = yCaret.toFixed(2);
+}
+
+</script>
+</html>
